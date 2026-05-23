@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>一键排版助手</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #f8fafc, #f1f5f9); min-height: 100vh; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        .header { text-align: center; margin-bottom: 2rem; }
+        .header h1 { font-size: 2.25rem; font-weight: 700; color: #1e293b; margin-bottom: 0.5rem; }
+        .header p { color: #475569; }
+        .main-content { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem; }
+        @media (max-width: 1024px) { .main-content { grid-template-columns: 1fr; } }
+        .panel { background: white; border-radius: 1rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); overflow: hidden; }
+        .panel-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 1rem; color: white; font-weight: 600; }
+        .editor { width: 100%; height: 24rem; padding: 1rem; border: none; resize: none; font-family: inherit; font-size: 1rem; background: #f8fafc; }
+        .editor:focus { outline: none; box-shadow: inset 0 0 0 2px #667eea; }
+        .preview { height: 24rem; padding: 1rem; background: #f8fafc; overflow-y: auto; }
+        .preview p { margin: 0.5rem 0; line-height: 1.6; }
+        .preview h2 { margin: 1rem 0; color: #0f172a; }
+        .preview blockquote { border-left: 4px solid #667eea; padding-left: 1rem; margin: 1rem 0; color: #475569; background: #e0e7ff; padding: 0.5rem 1rem; border-radius: 0 0.5rem 0.5rem 0; }
+        .preview strong { font-weight: 600; color: #1e293b; }
+        .preview em { font-style: italic; color: #64748b; }
+        .preview hr { border: none; border-top: 2px dashed #cbd5e1; margin: 1.5rem 0; }
+        .actions { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+        .btn { padding: 0.75rem 2rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3); }
+        .btn-secondary { background: #e2e8f0; color: #475569; }
+        .btn-secondary:hover { background: #cbd5e1; box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1); }
+        .features { display: flex; justify-content: center; gap: 2rem; margin-top: 2rem; flex-wrap: wrap; }
+        .feature { text-align: center; padding: 1rem; background: white; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .feature .icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
+        .feature .title { font-weight: 600; color: #1e293b; }
+        .feature .desc { font-size: 0.875rem; color: #64748b; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✨ 一键排版助手</h1>
+            <p>轻松将文本转换为爆款排版格式</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="panel">
+                <div class="panel-header">📝 编辑区</div>
+                <textarea id="editor" class="editor" placeholder="在此输入您的文本...&#10;&#10;例如：&#10;一、项目背景&#10;随着互联网的发展，内容创作变得越来越重要。&#10;&#10;二、核心优势&#10;我们的产品具有重要的创新点，能够帮助用户提高效率。"></textarea>
+            </div>
+            
+            <div class="panel">
+                <div class="panel-header">👁️ 预览区</div>
+                <div id="preview" class="preview">预览将在此显示...</div>
+            </div>
+        </div>
+        
+        <div class="actions">
+            <button id="formatBtn" class="btn">🔥 一键排版</button>
+            <button id="clearBtn" class="btn btn-secondary">🗑️ 清空内容</button>
+            <button id="copyBtn" class="btn btn-secondary">📋 复制结果</button>
+        </div>
+        
+        <div class="features">
+            <div class="feature">
+                <div class="icon">🎯</div>
+                <div class="title">智能识别</div>
+                <div class="desc">自动识别标题和关键词</div>
+            </div>
+            <div class="feature">
+                <div class="icon">✨</div>
+                <div class="title">爆款格式</div>
+                <div class="desc">一键生成吸睛排版</div>
+            </div>
+            <div class="feature">
+                <div class="icon">📊</div>
+                <div class="title">关键词加粗</div>
+                <div class="desc">突出核心要点</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const editor = document.getElementById('editor');
+        const preview = document.getElementById('preview');
+        
+        function formatMarkdown(text) {
+            if (!text.trim()) return '';
+            
+            let formatted = text;
+            
+            formatted = formatted
+                .replace(/\*{3}/g, '<<<TRIPLE>>>')
+                .replace(/^#{1,2}\s+/gm, '')
+                .replace(/^---\s*/gm, '')
+                .replace(/^>\s*/gm, '')
+                .replace(/\*{2}/g, '')
+                .replace(/\*/g, '')
+                .replace(/<<<TRIPLE>>>/g, '***');
+            
+            formatted = formatted
+                .replace(/^一[、，,]\s*/gm, '')
+                .replace(/^二[、，,]\s*/gm, '')
+                .replace(/^三[、，,]\s*/gm, '')
+                .replace(/^四[、，,]\s*/gm, '')
+                .replace(/^五[、，,]\s*/gm, '')
+                .replace(/^六[、，,]\s*/gm, '')
+                .replace(/^七[、，,]\s*/gm, '')
+                .replace(/^八[、，,]\s*/gm, '')
+                .replace(/^九[、，,]\s*/gm, '')
+                .replace(/^十[、，,]\s*/gm, '');
+            
+            const lines = formatted.split('\n');
+            const titleLines = new Set();
+            
+            lines.forEach((line, index) => {
+                if (line.trim() === '' || line.trim() === '---') return;
+                
+                const h2Patterns = [
+                    /^一[、，,]\s*/, /^二[、，,]\s*/, /^三[、，,]\s*/, 
+                    /^四[、，,]\s*/, /^五[、，,]\s*/, /^六[、，,]\s*/, 
+                    /^七[、，,]\s*/, /^八[、，,]\s*/, /^九[、，,]\s*/
+                ];
+                
+                let isTitle = false;
+                h2Patterns.forEach(p => { if (p.test(line)) isTitle = true; });
+                
+                if (!isTitle) {
+                    const keywords = ['背景', '方法', '结论', '结果', '讨论', '概述', '引言', '总结', '问题', '原因', '措施', '案例', '分析', '对比', '优势', '特点', '亮点', '秘诀', '攻略', '指南', '技巧', '干货', '揭秘', '内幕', '真相', '干货', '深度', '独家', '重磅', '首发', '必看', '必读', '强烈推荐'];
+                    keywords.forEach(k => { if (line.includes(k) && line.length < 50) isTitle = true; });
+                }
+                
+                if (isTitle) titleLines.add(index);
+            });
+            
+            const usedBoldWords = new Set();
+            
+            const processedLines = lines.map((line, index) => {
+                let processedLine = line;
+                const isTitle = titleLines.has(index);
+                
+                if (line.trim() === '' || line.trim() === '---') return line;
+                
+                if (isTitle) {
+                    processedLine = `## **${line}**`;
+                } else {
+                    const hasBookTitle = line.includes('《') && line.includes('》');
+                    const hasQuote = line.includes('“') && line.includes('”');
+                    const hasDoubleQuote = line.includes('"') && line.match(/"/g)?.length >= 2;
+                    
+                    if (hasBookTitle || hasQuote || hasDoubleQuote) {
+                        processedLine = `> ${line}`;
+                    } else {
+                        const coreKeywords = [
+                            '爆款', '热销', '火爆', '刷屏', '疯抢', '断货', '秒光',
+                            '必看', '必读', '必买', '强烈推荐', '重磅', '独家', '首发',
+                            '重要', '关键', '核心', '主要', '重大', '首要', '重点',
+                            '必须', '必要', '不可或缺', '至关重要', '根本',
+                            '注意', '留意', '关注', '强调', '指出',
+                            '总结', '概括', '归纳', '总之', '总而言之',
+                            '建议', '提议', '提倡', '主张', '推荐',
+                            '特别', '尤其', '格外', '显著', '突出',
+                            '所以', '因此', '于是', '故而', '可见',
+                            '但是', '然而', '可是', '不过',
+                            '而且', '并且', '同时', '此外', '另外',
+                            '例如', '比如', '譬如',
+                            '如果', '假如', '要是', '只要',
+                            '与此相反', '相对而言', '相比之下',
+                            '因为', '由于', '既然', '导致', '致使',
+                            '首先', '其次', '然后', '接着', '最后',
+                            '揭秘', '内幕', '真相', '干货', '深度'
+                        ];
+                        
+                        coreKeywords.sort((a, b) => b.length - a.length);
+                        
+                        const boldRanges = [];
+                        
+                        coreKeywords.forEach(keyword => {
+                            if (usedBoldWords.has(keyword)) return;
+                            
+                            const regex = new RegExp(keyword, 'g');
+                            let match;
+                            while ((match = regex.exec(processedLine)) !== null) {
+                                const start = match.index;
+                                const end = start + keyword.length;
+                                
+                                const overlaps = boldRanges.some(r => 
+                                    (start >= r.start && start < r.end) || (end > r.start && end <= r.end)
+                                );
+                                if (!overlaps) {
+                                    const after = processedLine.slice(end);
+                                    const puncMatch = after.match(/[，。！？、；：,\.!?'")]/);
+                                    const newEnd = puncMatch ? end + puncMatch.index : processedLine.length;
+                                    
+                                    boldRanges.push({start, end: newEnd, word: keyword});
+                                    usedBoldWords.add(keyword);
+                                }
+                            }
+                        });
+                        
+                        boldRanges.sort((a, b) => b.start - a.start);
+                        
+                        boldRanges.forEach(({start, end}) => {
+                            const before = processedLine.slice(0, start);
+                            const content = processedLine.slice(start, end);
+                            const after = processedLine.slice(end);
+                            processedLine = before + `**${content}**` + after;
+                        });
+                        
+                        const minorKeywords = ['可能', '也许', '大概', '估计', '或许', '应当', '应该', '可以', '宜', '适宜', '考虑', '思考', '分析', '研究', '探讨', '比较', '相对', '基本上', '大体上'];
+                        
+                        minorKeywords.forEach(keyword => {
+                            const regex = new RegExp(`(?<=[^\\w])${keyword}(?=[^\\w])`, 'g');
+                            processedLine = processedLine.replace(regex, `*${keyword}*`);
+                        });
+                    }
+                }
+                
+                if (isTitle && index > 0) {
+                    processedLine = '---\n\n' + processedLine;
+                }
+                
+                return processedLine;
+            });
+            
+            return processedLines.join('\n');
+        }
+        
+        function renderMarkdown(text) {
+            if (!text.trim()) {
+                return '<p style="color: #9ca3af;">预览将在此显示...</p>';
+            }
+            
+            let html = text;
+            
+            html = html
+                .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
+                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.+?)\*/g, '<em>$1</em>')
+                .replace(/^---$/gm, '<hr>')
+                .replace(/^##\s+(.+)$/gm, '<h2>$1</h2>')
+                .replace(/^#\s+(.+)$/gm, '<h1>$1</h1>')
+                .replace(/^>\s*(.+)$/gm, '<blockquote>$1</blockquote>')
+                .replace(/\n/g, '<br>');
+            
+            return html;
+        }
+        
+        function updatePreview() {
+            preview.innerHTML = renderMarkdown(editor.value);
+        }
+        
+        function handleFormat() {
+            editor.value = formatMarkdown(editor.value);
+            updatePreview();
+        }
+        
+        function handleClear() {
+            editor.value = '';
+            preview.innerHTML = '<p style="color: #9ca3af;">预览将在此显示...</p>';
+        }
+        
+        async function handleCopy() {
+            try {
+                await navigator.clipboard.writeText(editor.value);
+                alert('✅ 已复制到剪贴板！');
+            } catch (err) {
+                const textarea = document.createElement('textarea');
+                textarea.value = editor.value;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                alert('✅ 已复制到剪贴板！');
+            }
+        }
+        
+        editor.addEventListener('input', updatePreview);
+        document.getElementById('formatBtn').addEventListener('click', handleFormat);
+        document.getElementById('clearBtn').addEventListener('click', handleClear);
+        document.getElementById('copyBtn').addEventListener('click', handleCopy);
+        
+        updatePreview();
+    </script>
+</body>
+</html>
