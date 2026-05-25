@@ -2,8 +2,21 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <!-- 基础路径配置，支持 GitHub Pages -->
-    <base href="./" />
+    <!-- 动态基础路径配置，支持 GitHub Pages 子路径部署 -->
+    <script>
+      (function() {
+        var pathname = window.location.pathname;
+        var basePath = '/';
+        if (pathname && pathname !== '/') {
+          var segments = pathname.split('/').filter(function(s) { return s && s !== 'index.html'; });
+          if (segments.length > 0) {
+            basePath = '/' + segments[0] + '/';
+          }
+        }
+        document.write('<base href="' + basePath + '" />');
+        console.log('Base path set to:', basePath);
+      })();
+    </script>
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>My Trae Project</title>
