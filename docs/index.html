@@ -2,31 +2,13 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <!-- 动态基础路径配置，支持 GitHub Pages 子路径部署 -->
-    <script>
-      (function() {
-        var pathname = window.location.pathname;
-        var basePath = '/';
-        if (pathname && pathname !== '/') {
-          var segments = pathname.split('/').filter(function(s) { return s && s !== 'index.html'; });
-          if (segments.length > 0) {
-            basePath = '/' + segments[0] + '/';
-          }
-        }
-        document.write('<base href="' + basePath + '" />');
-        console.log('Base path set to:', basePath);
-      })();
-    </script>
-    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="./"/>
     <title>My Trae Project</title>
-    <!-- 最早的安全脚本，确保在任何其他代码前执行 -->
     <script>
-      // 立即替换 storage 对象，防止任何代码在我们替换前访问
       (function() {
         'use strict';
-        
-        // 创建安全的存储模拟对象
+
         function createSafeStorage() {
           var data = {};
           return {
@@ -78,12 +60,10 @@
             }
           };
         }
-        
-        // 立即替换，不尝试访问真实的存储，直接使用安全版本
+
         var safeLocalStorage = createSafeStorage();
         var safeSessionStorage = createSafeStorage();
-        
-        // 使用 Object.defineProperty 进行安全替换
+
         try {
           Object.defineProperty(window, 'localStorage', {
             value: safeLocalStorage,
@@ -91,52 +71,33 @@
             configurable: true,
             enumerable: true
           });
-          
+
           Object.defineProperty(window, 'sessionStorage', {
             value: safeSessionStorage,
             writable: true,
             configurable: true,
             enumerable: true
           });
-          
-          console.log('安全存储已初始化');
+
+          console.log('Safe storage initialized');
         } catch (e) {
-          console.error('无法替换存储对象:', e);
+          console.error('Cannot replace storage:', e);
         }
       })();
-      
-      // 处理 GitHub Pages 路由问题
+
       (function() {
         'use strict';
-        
-        function handleRedirectFrom404() {
-          try {
-            var redirectUrl = localStorage.getItem('redirectUrl');
-            if (redirectUrl && redirectUrl !== '/' && redirectUrl !== '/index.html') {
-              localStorage.removeItem('redirectUrl');
-              console.log('从 404 重定向恢复:', redirectUrl);
-              window.history.replaceState({}, '', redirectUrl);
-            }
-          } catch (e) {
-            console.warn('无法读取重定向 URL:', e);
-          }
-        }
-        
+
         function normalizeUrl() {
           var pathname = window.location.pathname;
-          
+
           if (pathname === '/index.html' || pathname.endsWith('/index.html')) {
             var newPath = pathname.replace('/index.html', '/');
-            var newUrl = window.location.origin + newPath + window.location.search + window.location.hash;
-            console.log('重定向到:', newUrl);
-            window.history.replaceState({}, '', newUrl);
+            window.history.replaceState({}, '', newPath + window.location.search + window.location.hash);
           }
         }
-        
-        handleRedirectFrom404();
+
         normalizeUrl();
-        
-        console.log('URL 已规范化');
       })();
     </script>
     <script type="module" crossorigin src="./assets/index-BIvBQkjC.js"></script>
