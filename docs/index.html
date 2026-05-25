@@ -96,21 +96,31 @@
       (function() {
         'use strict';
         
-        // 检查并修复 URL
+        function handleRedirectFrom404() {
+          try {
+            var redirectUrl = localStorage.getItem('redirectUrl');
+            if (redirectUrl && redirectUrl !== '/' && redirectUrl !== '/index.html') {
+              localStorage.removeItem('redirectUrl');
+              console.log('从 404 重定向恢复:', redirectUrl);
+              window.history.replaceState({}, '', redirectUrl);
+            }
+          } catch (e) {
+            console.warn('无法读取重定向 URL:', e);
+          }
+        }
+        
         function normalizeUrl() {
           var pathname = window.location.pathname;
           
-          // 如果 URL 包含 index.html，重定向到根路径
           if (pathname === '/index.html' || pathname.endsWith('/index.html')) {
             var newPath = pathname.replace('/index.html', '/');
             var newUrl = window.location.origin + newPath + window.location.search + window.location.hash;
             console.log('重定向到:', newUrl);
-            // 使用 replace 不添加新的历史记录
             window.history.replaceState({}, '', newUrl);
           }
         }
         
-        // 执行 URL 规范化
+        handleRedirectFrom404();
         normalizeUrl();
         
         console.log('URL 已规范化');
