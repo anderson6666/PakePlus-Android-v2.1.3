@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Page Not Found</title>
+    <script>
+      // GitHub Pages SPA 路由重定向脚本
+      (function() {
+        // 获取当前路径
+        var pathname = window.location.pathname;
+        var search = window.location.search;
+        var hash = window.location.hash;
+        
+        // 将路径存储到 localStorage 中，供主应用读取
+        var redirectUrl = pathname + search + hash;
+        try {
+          localStorage.setItem('redirectUrl', redirectUrl);
+        } catch (e) {
+          // 如果 localStorage 不可用，使用其他方法
+          console.warn('无法存储重定向 URL:', e);
+        }
+        
+        // 获取基础路径（GitHub Pages 仓库名）
+        var pathSegments = pathname.split('/');
+        var basePath = '';
+        
+        // 构建重定向到根路径
+        var newLocation = window.location.protocol + '//' + window.location.hostname;
+        if (window.location.port) {
+          newLocation += ':' + window.location.port;
+        }
+        newLocation += '/';
+        
+        console.log('重定向到:', newLocation);
+        
+        // 使用 replace 重定向
+        window.location.replace(newLocation);
+      })();
+    </script>
+  </head>
+  <body>
+    <h1>Redirecting...</h1>
+    <p>If you are not redirected automatically, <a href="/">click here</a>.</p>
+  </body>
+</html>
