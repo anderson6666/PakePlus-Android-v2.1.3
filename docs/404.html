@@ -9,28 +9,27 @@
         var pathname = window.location.pathname;
         var search = window.location.search;
         var hash = window.location.hash;
-        
-        var redirectUrl = pathname + search + hash;
-        try {
-          localStorage.setItem('redirectUrl', redirectUrl);
-        } catch (e) {
-          console.warn('无法存储重定向 URL:', e);
-        }
-        
+
         var pathSegments = pathname.split('/').filter(function(s) { return s && s !== 'index.html'; });
         var basePath = '/';
         if (pathSegments.length > 0) {
-          basePath = '/' + pathSegments[0] + '/';
+          basePath = '/' + pathSegments[0];
         }
-        
+
+        var redirectUrl = pathname + search + hash;
+        try {
+          sessionStorage.setItem('spaRedirect', redirectUrl);
+        } catch (e) {
+          console.warn('无法存储重定向 URL:', e);
+        }
+
         var newLocation = window.location.protocol + '//' + window.location.hostname;
         if (window.location.port) {
           newLocation += ':' + window.location.port;
         }
-        newLocation += basePath;
-        
+        newLocation += basePath + '/';
+
         console.log('重定向到:', newLocation);
-        
         window.location.replace(newLocation);
       })();
     </script>
