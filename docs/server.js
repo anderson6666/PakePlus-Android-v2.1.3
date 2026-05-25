@@ -4,64 +4,81 @@ const path = require('path');
 
 const PORT = 8000;
 
-// MIME 类型
 const mimeTypes = {
   '.html': 'text/html',
   '.js': 'text/javascript',
   '.css': 'text/css',
   '.json': 'application/json',
   '.png': 'image/png',
-  '.jpg': 'image/jpg',
+  '.jpg': 'image/jpeg',
   '.gif': 'image/gif',
   '.svg': 'image/svg+xml',
   '.ico': 'image/x-icon'
 };
 
-// 创建服务器
-const server = http.createServer((req, res) => {
-  console.log(`${req.method} ${req.url}`);
-  
-  // 处理路由 - 所有请求都返回 index.html (SPA 路由)
-  let filePath = '.' + req.url;
-  if (filePath === './') {
-    filePath = './index.html';
-  }
-  
-  // 如果文件不存在，返回 index.html
-  fs.access(filePath, fs.constants.F_OK, (err) => {
-    if (err || filePath.endsWith('/')) {
-      filePath = './index.html';
+function serveFile(filePath, res, urlPath) {
+  const ext = path.extname(filePath).toLowerCase();
+  const contentType = mimeTypes[ext] || 'application/octet-stream';
+
+  fs.readFile(filePath, (err, data) => {
+    if (err) {
+      console.error('Error reading file:', filePath);
+      res.writeHead(404);
+      res.end('Not found');
+      return;
     }
-    
-    // 获取文件扩展名
-    const extname = String(path.extname(filePath)).toLowerCase();
-    const contentType = mimeTypes[extname] || 'application/octet-stream';
-    
-    // 读取文件
-    fs.readFile(filePath, (error, content) => {
-      if (error) {
-        if(error.code == 'ENOENT') {
-          // 如果文件不存在，返回 index.html
-          fs.readFile('./index.html', (error, content) => {
-            res.writeHead(200, { 'Content-Type': 'text/html' });
-            res.end(content, 'utf-8');
-          });
-        }
-        else {
-          res.writeHead(500);
-          res.end('Sorry, check with the site admin for error: '+error.code+' ..\n');
-          res.end(); 
-        }
+
+    res.writeHead(200, { 'Content-Type': contentType });
+    res.end(data);
+  });
+}
+
+const server = http.createServer((req, res) => {
+  const urlPath = decodeURIComponent(req.url).split('?')[0];
+
+  if (urlPath.startsWith('/@')) {
+    serveFile('./index.html', res, urlPath);
+    return;
+  }
+
+  let filePath = '.' + urlPath;
+
+  if (filePath.endsWith('/')) {
+    filePath += 'index.html';
+  }
+
+  fs.stat(filePath, (err, stats) => {
+    if (err || !stats.isFile()) {
+      const ext = path.extname(urlPath);
+      if (mimeTypes[ext]) {
+        const fileName = path.basename(urlPath);
+        let found = false;
+        
+        const rootPath = './' + fileName;
+        fs.stat(rootPath, (err2, stats2) => {
+          if (!err2 && stats2.isFile()) {
+            serveFile(rootPath, res, urlPath);
+            found = true;
+          } else {
+            const assetsPath = './assets/' + fileName;
+            fs.stat(assetsPath, (err3, stats3) => {
+              if (!err3 && stats3.isFile()) {
+                serveFile(assetsPath, res, urlPath);
+              } else {
+                serveFile('./index.html', res, urlPath);
+              }
+            });
+          }
+        });
+      } else {
+        serveFile('./index.html', res, urlPath);
       }
-      else {
-        res.writeHead(200, { 'Content-Type': contentType });
-        res.end(content, 'utf-8');
-      }
-    });
+    } else {
+      serveFile(filePath, res, urlPath);
+    }
   });
 });
 
 server.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}/`);
-  console.log('Press Ctrl+C to stop the server');
 });
