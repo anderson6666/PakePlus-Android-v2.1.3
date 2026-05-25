@@ -36,6 +36,18 @@ function serveFile(filePath, res, urlPath) {
 const server = http.createServer((req, res) => {
   const urlPath = decodeURIComponent(req.url).split('?')[0];
 
+  if (urlPath === '/favicon.ico') {
+    fs.stat('./favicon.svg', (err, stats) => {
+      if (!err && stats.isFile()) {
+        serveFile('./favicon.svg', res, urlPath);
+      } else {
+        res.writeHead(204);
+        res.end();
+      }
+    });
+    return;
+  }
+
   if (urlPath.startsWith('/@')) {
     serveFile('./index.html', res, urlPath);
     return;
@@ -52,20 +64,19 @@ const server = http.createServer((req, res) => {
       const ext = path.extname(urlPath);
       if (mimeTypes[ext]) {
         const fileName = path.basename(urlPath);
-        let found = false;
         
         const rootPath = './' + fileName;
         fs.stat(rootPath, (err2, stats2) => {
           if (!err2 && stats2.isFile()) {
             serveFile(rootPath, res, urlPath);
-            found = true;
           } else {
             const assetsPath = './assets/' + fileName;
             fs.stat(assetsPath, (err3, stats3) => {
               if (!err3 && stats3.isFile()) {
                 serveFile(assetsPath, res, urlPath);
               } else {
-                serveFile('./index.html', res, urlPath);
+                res.writeHead(404);
+                res.end('Not found');
               }
             });
           }
