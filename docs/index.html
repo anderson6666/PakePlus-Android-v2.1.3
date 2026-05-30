@@ -88,20 +88,20 @@
           }
         }, 100);
       }
-      waitForElement('textarea', () => {
-        const textareas = document.querySelectorAll('textarea');
-        if (textareas.length < 2) return;
-        
-        const inputArea = textareas[0];
-        const outputArea = textareas[textareas.length - 1];
-        
+      setTimeout(() => {
         const buttons = document.getElementById('customButtons');
         buttons.style.display = 'flex';
+        
         const fixBtn = document.getElementById('fixBtn');
         const copyBtn = document.getElementById('copyBtn');
-        const copySuccess = document.getElementById('copySuccess');
         
         fixBtn.addEventListener('click', () => {
+          const textareas = document.querySelectorAll('textarea');
+          if (textareas.length < 2) return;
+          
+          const inputArea = textareas[0];
+          const outputArea = textareas[textareas.length - 1];
+          
           const inputContent = inputArea.value;
           let outputContent = outputArea.value;
           
@@ -125,10 +125,14 @@
         });
         
         copyBtn.addEventListener('click', () => {
+          const textareas = document.querySelectorAll('textarea');
+          if (textareas.length < 1) return;
+          
+          const outputArea = textareas[textareas.length - 1];
           outputArea.focus();
           outputArea.select();
         });
-      });
+      }, 1000);
     </script>
   </body>
 </html>
