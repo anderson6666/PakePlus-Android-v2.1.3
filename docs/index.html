@@ -1,14 +1,124 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Trae Project</title>
+    <title>AI排版工具</title>
     <script type="module" crossorigin src="assets/index-BIvBQkjC.js"></script>
     <link rel="stylesheet" crossorigin href="assets/index-Bih4pgCf.css">
+    <style>
+      .custom-btn {
+        padding: 8px 16px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .custom-btn-fix {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: white;
+      }
+      .custom-btn-fix:hover {
+        background: linear-gradient(135deg, #d97706, #b45309);
+      }
+      .custom-btn-copy {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+      }
+      .custom-btn-copy:hover {
+        background: linear-gradient(135deg, #059669, #047857);
+      }
+      .custom-btn-group {
+        display: flex;
+        gap: 12px;
+        margin-top: 12px;
+        justify-content: center;
+      }
+      .copy-success {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #10b981;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 500;
+        opacity: 0;
+        transform: translateY(-20px);
+        transition: all 0.3s ease;
+        z-index: 10000;
+      }
+      .copy-success.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
+    <div class="custom-btn-group" id="customButtons" style="display: none;">
+      <button class="custom-btn custom-btn-fix" id="fixBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+        </svg>
+        一键修复
+      </button>
+      <button class="custom-btn custom-btn-copy" id="copyBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+        </svg>
+        一键选择
+      </button>
+    </div>
+    <div class="copy-success" id="copySuccess">复制成功！</div>
+    <script>
+      function waitForElement(selector, callback) {
+        const interval = setInterval(() => {
+          const element = document.querySelector(selector);
+          if (element) {
+            clearInterval(interval);
+            callback(element);
+          }
+        }, 100);
+      }
+      waitForElement('textarea', (textarea) => {
+        const buttons = document.getElementById('customButtons');
+        buttons.style.display = 'flex';
+        const outputArea = textarea.parentElement.parentElement.querySelector('div[contenteditable="true"], textarea:last-of-type') || textarea;
+        const fixBtn = document.getElementById('fixBtn');
+        const copyBtn = document.getElementById('copyBtn');
+        const copySuccess = document.getElementById('copySuccess');
+        fixBtn.addEventListener('click', () => {
+          if (outputArea.tagName === 'TEXTAREA') {
+            let content = outputArea.value;
+            content = content.replace(/\*/g, '').replace(/^>\s*/gm, '');
+            outputArea.value = content;
+          } else {
+            let content = outputArea.innerText;
+            content = content.replace(/\*/g, '').replace(/^>\s*/gm, '');
+            outputArea.innerText = content;
+          }
+        });
+        copyBtn.addEventListener('click', () => {
+          outputArea.focus();
+          if (outputArea.tagName === 'TEXTAREA') {
+            outputArea.select();
+          } else if (outputArea.isContentEditable) {
+            const selection = window.getSelection();
+            const range = document.createRange();
+            range.selectNodeContents(outputArea);
+            selection.removeAllRanges();
+            selection.addRange(range);
+          }
+        });
+      });
+    </script>
   </body>
 </html>
